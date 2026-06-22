@@ -5,3 +5,4 @@ nltk
 xgboost
 nltk
 xgboost
+dvc[s3]==3.67.1
