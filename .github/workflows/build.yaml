@@ -1,0 +1,36 @@
+on:
+    push:
+        branches: [ dvc ]
+    pull_request:
+        branches: [ dvc ]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+        - name: Set up Python 3.8
+          uses: actions/setup-python@v4
+          with:
+            python-version: 3.8
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+        - name: Run DVC pipeline
+          run: |
+            dvc pull
+            dvc repro
+        - name: Login to Docker Hub
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+        - name: Build and push Docker image
+          uses: docker/build-push-action@v3
+          with:
+            context: .
+            push: true
+            tags: ${{ secrets.DOCKER_USERNAME }}/mlops-pipeline:latest
+            file: ./dockerfile

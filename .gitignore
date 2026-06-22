@@ -4,3 +4,4 @@ data/
 /evaluation_results.json
 /metrics.json
 .DS_Store
+pipelines/
