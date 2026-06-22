@@ -1,0 +1,37 @@
+stages:
+  data_ingestion:
+    cmd: python src/data_ingestion.py
+    deps:
+      - src/data_ingestion.py
+    outs:
+      - pipelines/data_ingestion/train_data.csv
+      - pipelines/data_ingestion/test_data.csv
+  data_preprocessing:
+    cmd: python src/data_preprocessing.py
+    deps:
+      - src/data_preprocessing.py
+      - pipelines/data_ingestion/train_data.csv
+    outs:
+      - pipelines/data_preprocessing/preprocessed_data.csv
+  feature_engineering:
+    cmd: python src/feature_engineering.py
+    deps:
+      - src/feature_engineering.py
+      - pipelines/data_preprocessing/preprocessed_data.csv
+    outs:
+      - pipelines/feature_engineering/engineered_data.csv
+  model_training:
+    cmd: python src/model.py
+    deps:
+      - src/model.py
+      - pipelines/feature_engineering/engineered_data.csv
+    outs:
+      - pipelines/model/xgboost_model.pkl
+  model_evaluation:
+    cmd: python src/evaluation.py
+    deps:
+      - src/evaluation.py
+      - pipelines/model/xgboost_model.pkl
+      - pipelines/feature_engineering/engineered_data.csv
+    metrics:
+      - metrics.json 
