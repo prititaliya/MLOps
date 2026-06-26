@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+import mlflow
+mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
 
 def feature_engineering(data):
     """Perform feature engineering on the preprocessed data.
@@ -21,6 +23,7 @@ def feature_engineering(data):
         # Create a new feature for the average word length in the tweet
         data['avg_word_length'] = data['tweet'].apply(lambda x: np.mean([len(word) for word in x.split()]) if len(x.split()) > 0 else 0)
 
+        mlflow.log_param("feature_engineering_steps", "created num_words and avg_word_length features")
         return data
     except Exception as e:
         logging.error(f"Error during feature engineering: {e}")
@@ -39,6 +42,7 @@ def vectorize_data(data):
         X = vectorizer.fit_transform(data['tweet'])
         vectorized_data = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out())
         vectorized_data['sentiment'] = data['sentiment']
+        mlflow.log_param("vectorization_method", "CountVectorizer")
         return vectorized_data
     except Exception as e:
         logging.error(f"Error during data vectorization: {e}")
@@ -58,17 +62,20 @@ def save_engineered_data(data, output_dir="/Users/jatin/Desktop/MLOps/pipelines/
         output_dir.mkdir(parents=True, exist_ok=True)
 
         data.to_csv(output_dir / "engineered_data.csv", index=False)
+        mlflow.log_artifact(str(output_dir / "engineered_data.csv"))
         logging.info(f"Engineered data saved successfully to {output_dir}")
     except Exception as e:
         logging.error(f"Error saving engineered data to {output_dir if 'output_dir' in locals() else 'output directory'}: {e}") 
 def main():
     data = pd.read_csv("/Users/jatin/Desktop/MLOps/pipelines/data_preprocessing/preprocessed_data.csv")
     print(data.head())
-    if data is not None:
-        engineered_data = feature_engineering(data)
-        vectorized_data = vectorize_data(engineered_data)
-        logging.info("First few rows of the engineered and vectorized data:")
-        logging.info(vectorized_data.head())
-        save_engineered_data(vectorized_data)
+    mlflow.set_experiment("XGBoost")
+    with mlflow.start_run():
+        if data is not None:
+            engineered_data = feature_engineering(data)
+            vectorized_data = vectorize_data(engineered_data)
+            logging.info("First few rows of the engineered and vectorized data:")
+            logging.info(vectorized_data.head())
+            save_engineered_data(vectorized_data)
 if __name__ == "__main__":   
      main()    

@@ -5,6 +5,9 @@ from pathlib import Path
 import json
 from sklearn.metrics import classification_report, confusion_matrix
 import pickle
+import mlflow
+mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 def evaluate_model(model, X_test, y_test):
     """Evaluate the trained model on the test data.
@@ -22,6 +25,10 @@ def evaluate_model(model, X_test, y_test):
         conf_matrix = confusion_matrix(y_test, y_pred)
         print(f"Classification Report: {report}")
         print(f"Confusion Matrix: \n{conf_matrix}")
+        mlflow.log_metric("accuracy", report['accuracy'])
+        mlflow.log_metric("precision", report['1']['precision'])
+        mlflow.log_metric("recall", report['1']['recall'])
+        mlflow.log_metric("f1-score", report['1']['f1-score'])
         return {
             "classification_report": report,
             "confusion_matrix": conf_matrix.tolist()
@@ -60,11 +67,13 @@ def main():
     X_test = data.drop('sentiment', axis=1)
     y_test = data['sentiment']
     model = load_model()
-    if model is not None:
-        evaluation_results = evaluate_model(model, X_test, y_test)
-        if evaluation_results is not None:
-            save_evaluation_results(evaluation_results)
-            logging.info(f"Classification Report: {evaluation_results['classification_report']}")
-            logging.info(f"Confusion Matrix: \n{evaluation_results['confusion_matrix']}")
+    mlflow.set_experiment("XGBoost")
+    with mlflow.start_run():
+        if model is not None:
+            evaluation_results = evaluate_model(model, X_test, y_test)
+            if evaluation_results is not None:
+                save_evaluation_results(evaluation_results)
+                logging.info(f"Classification Report: {evaluation_results['classification_report']}")
+                logging.info(f"Confusion Matrix: \n{evaluation_results['confusion_matrix']}")
 if __name__ == "__main__":
     main()

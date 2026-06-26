@@ -6,3 +6,8 @@ xgboost
 nltk
 xgboost
 dvc
+mlflow
+boto3    
+fastapi
+uvicorn
+pydantic

@@ -29,4 +29,4 @@ jobs:
             context: .
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/mlops-pipeline:latest
-            file: ./dockerfile
+            file: ./dockerfile  
