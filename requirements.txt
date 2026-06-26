@@ -11,4 +11,3 @@ boto3
 fastapi
 uvicorn
 pydantic
-artifacts/*

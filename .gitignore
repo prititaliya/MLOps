@@ -6,3 +6,4 @@ data/
 .DS_Store
 pipelines/
 /Users/jatin/Desktop/MLOps/Github-code-reviewer_accessKeys.csv
+artifacts/*
