@@ -12,4 +12,4 @@ COPY . .
 RUN mkdir -p /Users/jatin/Desktop \
 	&& ln -sfn /app /Users/jatin/Desktop/MLOps
 
-CMD ["python", "src/app.py"]
+CMD ["python3", "app.py"]
