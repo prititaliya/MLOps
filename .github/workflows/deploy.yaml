@@ -1,6 +1,5 @@
 name: Deploy to ECR
 
-# THIS IS WHAT YOU ARE MISSING
 on:
   push:
     branches:
@@ -41,5 +40,5 @@ jobs:
           docker stop mlops-app || true
           docker rm mlops-app || true
           # Run new container
-          docker run -d -p 80:80 --name mlops-app ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          docker run -d -p 80:8000 --name mlops-app ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           docker system prune -f
