@@ -11,14 +11,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 import nltk
 
 from sklearn.preprocessing import LabelEncoder  
+from src.paths import project_path
 
 class ModelPredictor:
-    def __init__(self, model_path="pipelines/model/xgboost_model.pkl"):
+    def __init__(self, model_path=None):
         """Initialize the ModelPredictor with the path to the trained model.
         Parameters:
         model_path (str): The path to the trained model file.
         """
-        self.model_path = Path(model_path)
+        self.model_path = Path(model_path) if model_path is not None else project_path("pipelines", "model", "xgboost_model.pkl")
         self.model = self.load_model()
 
     def load_model(self):

@@ -10,6 +10,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 import joblib
 import mlflow   
+from src.paths import project_path
 mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 def preprocess_data(data,predict=False):
@@ -28,7 +29,7 @@ def preprocess_data(data,predict=False):
         label_encoder = LabelEncoder()
         if not predict:
             data['sentiment'] = label_encoder.fit_transform(data['sentiment'])
-            joblib.dump(label_encoder, "/Users/jatin/Desktop/MLOps/pipelines/model/label_encoder.pkl")
+            joblib.dump(label_encoder, project_path("pipelines", "model", "label_encoder.pkl"))
             
 
         # remove urls from the tweets
@@ -100,6 +101,7 @@ def load_data(file_path="/Users/jatin/Desktop/MLOps/pipelines/data_ingestion/tra
     pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
+        file_path = project_path("pipelines", "data_ingestion", "train_data.csv")
         data = pd.read_csv(file_path)
         logging.info(f"Data loaded successfully from {file_path}")
         return data
@@ -119,7 +121,7 @@ def save_data(data, output_dir="/Users/jatin/Desktop/MLOps/pipelines/data_prepro
         if data is None:
             raise ValueError("No data available to save")
 
-        output_dir = Path(output_dir)
+        output_dir = project_path("pipelines", "data_preprocessing")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         data.to_csv(output_dir / "preprocessed_data.csv", index=False)

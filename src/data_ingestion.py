@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 import mlflow
 import os
+from src.paths import project_path
 os.environ["MLFLOW_HTTP_REQUEST_TIMEOUT"] = "2"
 os.environ["MLFLOW_HTTP_REQUEST_MAX_RETRIES"] = "1"
 
@@ -22,6 +23,7 @@ def load_data(file_path="/Users/jatin/Desktop/MLOps/data/archive/twitter_trainin
     pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
+        file_path = project_path("data", "archive", "twitter_training.csv")
         mlflow.log_param("file_path", file_path)
         data = pd.read_csv(file_path,header=None)
         data.columns = ['id', 'entity', 'sentiment', 'tweet']
@@ -47,7 +49,7 @@ def save_data(data, output_dir="/Users/jatin/Desktop/MLOps/pipelines/data_ingest
         if data is None:
             raise ValueError("No data available to save")
 
-        output_dir = Path(output_dir)
+        output_dir = project_path("pipelines", "data_ingestion")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         train_data = data.sample(frac=0.8, random_state=42)

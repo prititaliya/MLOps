@@ -6,6 +6,7 @@ import json
 from sklearn.metrics import classification_report, confusion_matrix
 import pickle
 import mlflow
+from src.paths import project_path
 mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -44,6 +45,7 @@ def load_model(model_path="/Users/jatin/Desktop/MLOps/pipelines/model/xgboost_mo
     XGBClassifier: The loaded XGBoost model.
     """
     try:
+        model_path = project_path("pipelines", "model", "xgboost_model.pkl")
         with open(model_path, "rb") as f:
             model = pickle.load(f)
         logging.info(f"Model loaded successfully from {model_path}")
@@ -63,7 +65,7 @@ def save_evaluation_results(results):
     except Exception as e:
         logging.error(f"Error saving evaluation results to metrics.json: {e}")
 def main():
-    data = pd.read_csv("/Users/jatin/Desktop/MLOps/pipelines/feature_engineering/engineered_data.csv")
+    data = pd.read_csv(project_path("pipelines", "feature_engineering", "engineered_data.csv"))
     X_test = data.drop('sentiment', axis=1)
     y_test = data['sentiment']
     model = load_model()

@@ -6,6 +6,7 @@ from xgboost import XGBClassifier
 import pickle
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 import mlflow
+from src.paths import project_path
 
 def train_model(X_train, y_train):
     """Train an XGBoost model on the training data.
@@ -34,7 +35,7 @@ def save_model(model, output_dir="/Users/jatin/Desktop/MLOps/pipelines/model"):
         if model is None:
             raise ValueError("No model available to save")
 
-        output_dir = Path(output_dir)
+        output_dir = project_path("pipelines", "model")
         output_dir.mkdir(parents=True, exist_ok=True)
         mlflow.log_param("output_dir", str(output_dir))
         mlflow.xgboost.log_model(model, artifact_path="xgboost_model")
@@ -48,7 +49,7 @@ def main():
     mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
     mlflow.set_experiment("XGBoost")
     with mlflow.start_run():
-        data = pd.read_csv("/Users/jatin/Desktop/MLOps/pipelines/feature_engineering/engineered_data.csv")
+        data = pd.read_csv(project_path("pipelines", "feature_engineering", "engineered_data.csv"))
         X_train = data.drop('sentiment', axis=1)
         y_train = data['sentiment']
         model = train_model(X_train, y_train)
