@@ -28,8 +28,6 @@ stages:
     deps:
       - src/model.py
       - pipelines/feature_engineering/engineered_data.csv
-    outs:
-      - pipelines/model/xgboost_model.pkl
 
   model_evaluation:
     cmd: python src/evaluation.py
