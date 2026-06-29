@@ -1,8 +1,8 @@
 on:
     push:
-        branches: [ dvc ]
+        branches: [ main ]
     pull_request:
-        branches: [ dvc ]
+        branches: [ main ]
 jobs:
     build:
         runs-on: ubuntu-latest
