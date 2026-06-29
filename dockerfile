@@ -1,17 +1,16 @@
 FROM python:3.8-slim
 
 WORKDIR /app
-RUN apt-get update && apt-get install -y git  # DVC needs git
 
+# Install git if needed, otherwise this is fine
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt dvc[s3] \
+    && pip install --no-cache-dir -r requirements.txt \
     && python -m nltk.downloader punkt stopwords wordnet
 
 COPY . .
 
-# Pull the model file from S3 during build
-# You must provide AWS credentials as build-args or via IAM role
-RUN dvc pull pipelines/model/xgboost_model.pkl
+# Remove the 'RUN dvc pull...' line. 
+# We will rely on the file being present in the repository.
 
 CMD ["python", "app.py"]
