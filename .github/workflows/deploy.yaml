@@ -1,79 +1,32 @@
-name: deployment
-on:
-  push:
-    branches: [ dvc ]
-  pull_request:
-    branches: [ dvc ]
-permissions:
-    contents: read
-    id-token: write
 jobs:
-  integration:
-    name: continous inteegration
-    runs-on: ubuntu-latest
-    steps:
-      - name : Checkout code
-        uses: actions/checkout@v3
-
-  build-and-push-ecr-image:
-    name: Build and Push Docker image to ECR
-    runs-on: ubuntu-latest
-    needs: integration
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: install utilities
-        run: |
-            sudo apt-get update
-            sudo apt-get install -y unzip
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: us-east-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build and Push Docker image to ECR
-        id: build-image
-        env: 
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-          IMAGE_TAG: latest
-        run: |
-          # Build the Docker image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-  continuous-deployment:
-    name: Continuous Deployment to AWS ECS
+  build-and-deploy:
     runs-on: self-hosted
-    needs: build-and-push-ecr-image
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: us-east-2
-      - name: login to Amazon ECR
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - name: pull request images
+
+      - name: Build and Push
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Deploy
         run: |
           docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-      - name: run docker to serve the application
-        run: |
-          docker run -d -p 80:80 ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-      - name: clean up docker containers
-        run: |
+          # Stop old container if running
+          docker stop mlops-app || true
+          docker rm mlops-app || true
+          # Run new container
+          docker run -d -p 80:80 --name mlops-app ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           docker system prune -f
