@@ -13,7 +13,7 @@ import nltk
 from sklearn.preprocessing import LabelEncoder  
 
 class ModelPredictor:
-    def __init__(self, model_path="/pipelines/model/xgboost_model.pkl"):
+    def __init__(self, model_path="pipelines/model/xgboost_model.pkl"):
         """Initialize the ModelPredictor with the path to the trained model.
         Parameters:
         model_path (str): The path to the trained model file.
@@ -147,7 +147,7 @@ def main():
         predictions = predictor.predict(preprocessed_data)
         if predictions is not None:
             logging.info(f"Predictions: {predictions[:5]}")  # Log first 5 predictions
-            encoder_path = Path("/pipelines/model/label_encoder.pkl")
+            encoder_path = Path("pipelines/model/label_encoder.pkl")
             if encoder_path.exists():
                 with open(encoder_path, "rb") as f:
                     label_encoder = joblib.load(f)
