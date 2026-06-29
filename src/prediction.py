@@ -13,6 +13,23 @@ import nltk
 from sklearn.preprocessing import LabelEncoder  
 from src.paths import project_path
 
+
+def ensure_nltk_resources():
+    resources = [
+        ("tokenizers/punkt", "punkt"),
+        ("tokenizers/punkt_tab", "punkt_tab"),
+        ("corpora/stopwords", "stopwords"),
+        ("corpora/wordnet", "wordnet"),
+    ]
+    for resource_path, resource_name in resources:
+        try:
+            nltk.data.find(resource_path)
+        except LookupError:
+            nltk.download(resource_name, quiet=True)
+
+
+ensure_nltk_resources()
+
 class ModelPredictor:
     def __init__(self, model_path=None):
         """Initialize the ModelPredictor with the path to the trained model.
@@ -139,8 +156,8 @@ def main():
         # data = pd.read_csv("/Users/jatin/Desktop/MLOps/pipelines/data_preprocessing/preprocessed_data.csv")
     # X = data.drop('sentiment', axis=1)
     input_data = pd.DataFrame({
-        'entity': ['CallOfDutyBlackopsColdWar'],
-        'tweet': ["My name is prit"]
+        "entity": ["CallOfDutyBlackopsColdWar"],
+        "tweet": ["My name is prit"]
     })
     predictor = ModelPredictor()
     preprocessed_data = predictor.preprocess_input(input_data)

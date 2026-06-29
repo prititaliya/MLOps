@@ -13,6 +13,24 @@ import mlflow
 from src.paths import project_path
 mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+def ensure_nltk_resources():
+    resources = [
+        ("tokenizers/punkt", "punkt"),
+        ("tokenizers/punkt_tab", "punkt_tab"),
+        ("corpora/stopwords", "stopwords"),
+        ("corpora/wordnet", "wordnet"),
+    ]
+    for resource_path, resource_name in resources:
+        try:
+            nltk.data.find(resource_path)
+        except LookupError:
+            nltk.download(resource_name, quiet=True)
+
+
+ensure_nltk_resources()
+
 def preprocess_data(data,predict=False):
     """
     Preprocess the data by encoding categorical variables.
