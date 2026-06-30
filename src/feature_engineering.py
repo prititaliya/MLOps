@@ -5,6 +5,7 @@ from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 import mlflow
+from src.paths import project_path
 mlflow.set_tracking_uri("http://ec2-3-15-213-179.us-east-2.compute.amazonaws.com:5000/")
 
 def feature_engineering(data):
@@ -58,7 +59,7 @@ def save_engineered_data(data, output_dir="/Users/jatin/Desktop/MLOps/pipelines/
         if data is None:
             raise ValueError("No data available to save")
 
-        output_dir = Path(output_dir)
+        output_dir = project_path("pipelines", "feature_engineering")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         data.to_csv(output_dir / "engineered_data.csv", index=False)
@@ -67,7 +68,7 @@ def save_engineered_data(data, output_dir="/Users/jatin/Desktop/MLOps/pipelines/
     except Exception as e:
         logging.error(f"Error saving engineered data to {output_dir if 'output_dir' in locals() else 'output directory'}: {e}") 
 def main():
-    data = pd.read_csv("/Users/jatin/Desktop/MLOps/pipelines/data_preprocessing/preprocessed_data.csv")
+    data = pd.read_csv(project_path("pipelines", "data_preprocessing", "preprocessed_data.csv"))
     print(data.head())
     mlflow.set_experiment("XGBoost")
     with mlflow.start_run():
